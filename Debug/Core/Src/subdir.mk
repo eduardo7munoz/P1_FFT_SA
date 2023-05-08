@@ -10,6 +10,7 @@ C_SRCS += \
 ../Core/Src/GPIO.c \
 ../Core/Src/MyTasks.c \
 ../Core/Src/UART.c \
+../Core/Src/UART_plotter.c \
 ../Core/Src/freertos.c \
 ../Core/Src/main.c \
 ../Core/Src/stm32l4xx_hal_msp.c \
@@ -26,6 +27,7 @@ OBJS += \
 ./Core/Src/GPIO.o \
 ./Core/Src/MyTasks.o \
 ./Core/Src/UART.o \
+./Core/Src/UART_plotter.o \
 ./Core/Src/freertos.o \
 ./Core/Src/main.o \
 ./Core/Src/stm32l4xx_hal_msp.o \
@@ -42,6 +44,7 @@ C_DEPS += \
 ./Core/Src/GPIO.d \
 ./Core/Src/MyTasks.d \
 ./Core/Src/UART.d \
+./Core/Src/UART_plotter.d \
 ./Core/Src/freertos.d \
 ./Core/Src/main.d \
 ./Core/Src/stm32l4xx_hal_msp.d \
@@ -60,7 +63,7 @@ Core/Src/%.o: ../Core/Src/%.c Core/Src/subdir.mk
 clean: clean-Core-2f-Src
 
 clean-Core-2f-Src:
-	-$(RM) ./Core/Src/ADC.d ./Core/Src/ADC.o ./Core/Src/DMA.d ./Core/Src/DMA.o ./Core/Src/GPIO.d ./Core/Src/GPIO.o ./Core/Src/MyTasks.d ./Core/Src/MyTasks.o ./Core/Src/UART.d ./Core/Src/UART.o ./Core/Src/freertos.d ./Core/Src/freertos.o ./Core/Src/main.d ./Core/Src/main.o ./Core/Src/stm32l4xx_hal_msp.d ./Core/Src/stm32l4xx_hal_msp.o ./Core/Src/stm32l4xx_hal_timebase_tim.d ./Core/Src/stm32l4xx_hal_timebase_tim.o ./Core/Src/stm32l4xx_it.d ./Core/Src/stm32l4xx_it.o ./Core/Src/syscalls.d ./Core/Src/syscalls.o ./Core/Src/sysmem.d ./Core/Src/sysmem.o ./Core/Src/system_stm32l4xx.d ./Core/Src/system_stm32l4xx.o ./Core/Src/timer.d ./Core/Src/timer.o
+	-$(RM) ./Core/Src/ADC.d ./Core/Src/ADC.o ./Core/Src/DMA.d ./Core/Src/DMA.o ./Core/Src/GPIO.d ./Core/Src/GPIO.o ./Core/Src/MyTasks.d ./Core/Src/MyTasks.o ./Core/Src/UART.d ./Core/Src/UART.o ./Core/Src/UART_plotter.d ./Core/Src/UART_plotter.o ./Core/Src/freertos.d ./Core/Src/freertos.o ./Core/Src/main.d ./Core/Src/main.o ./Core/Src/stm32l4xx_hal_msp.d ./Core/Src/stm32l4xx_hal_msp.o ./Core/Src/stm32l4xx_hal_timebase_tim.d ./Core/Src/stm32l4xx_hal_timebase_tim.o ./Core/Src/stm32l4xx_it.d ./Core/Src/stm32l4xx_it.o ./Core/Src/syscalls.d ./Core/Src/syscalls.o ./Core/Src/sysmem.d ./Core/Src/sysmem.o ./Core/Src/system_stm32l4xx.d ./Core/Src/system_stm32l4xx.o ./Core/Src/timer.d ./Core/Src/timer.o
 
 .PHONY: clean-Core-2f-Src
 

@@ -15,8 +15,9 @@
 #include "arm_math.h"
 #include "arm_const_structs.h"
 #include "semphr.h"
+#include "UART_plotter.h"
 
-#define SIZEFFT_FOR_SA LENGTH_OF_FFT/8
+#define SIZEFFT_FOR_SA LENGTH_OF_FFT
 #define SIZEOUTPUT_FFTSA SIZEFFT_FOR_SA*2
 
 char freqstring[4];
@@ -51,6 +52,8 @@ void setupFFT(void *argument)
 SemaphoreHandle_t printSemaphore = NULL;
 SemaphoreHandle_t calculateSemaphore1 = NULL;
 SemaphoreHandle_t calculateSemaphore2 = NULL;
+q15_t testOutput[SIZEOUTPUT_FFTSA] = {0};
+q15_t max;
 
 void calculate(void *argument)
 {
@@ -64,7 +67,7 @@ void calculate(void *argument)
 
 	arm_rfft_instance_q15 fft1;
 	uint16_t freq;
-	q15_t max;
+
 	uint32_t index;
 	q15_t * sampleloc1 =  (q15_t *)&collectedsamples;
 	q15_t * sampleloc2 =  (q15_t *)&collectedsamples[2047];
@@ -80,20 +83,20 @@ void calculate(void *argument)
 	{
 		for(;;)
 		{
-			q15_t testOutput[SIZEOUTPUT_FFTSA] = {0};
+
 			q15_t * outputloc = &testOutput[0];
 			q15_t * maxfreq = &testOutput[1];
 		    //start regular sequence
 		    ADC1->CR |= ADC_CR_ADSTART;
 
-				if(xSemaphoreTake(calculateSemaphore1, ( TickType_t ) 10 ) )
+				if(xSemaphoreTake(calculateSemaphore1, ( TickType_t ) 400 ) == pdTRUE)
 				{
 
 
 
 					arm_rfft_q15(&fft1, sampleloc1, outputloc);
 
-					arm_max_q15(&testOutput[1], SIZEOUTPUT_FFTSA-1 ,&max ,&index);
+					arm_max_q15(&testOutput[1], SIZEOUTPUT_FFTSA/2-1 ,&max ,&index);
 
 					freq = index/2;
 					GPIOC->ODR ^= GPIO_ODR_OD1;
@@ -105,11 +108,12 @@ void calculate(void *argument)
 
 
 				}
-				else if(xSemaphoreTake(calculateSemaphore2, ( TickType_t ) 10 ))
+
+				if(xSemaphoreTake(calculateSemaphore2, ( TickType_t ) 400 )== pdTRUE)
 				{
 
 					arm_rfft_q15(&fft1, sampleloc2, outputloc);
-					arm_max_q15(&testOutput[1], SIZEOUTPUT_FFTSA-1 ,&max ,&index);
+					arm_max_q15(&testOutput[1], SIZEOUTPUT_FFTSA/2-1 ,&max ,&index);
 					freq = index/2;
 					itoa(freq*(2048/256), freqstring, 10);
 					xSemaphoreGive(printSemaphore);
@@ -126,21 +130,29 @@ void calculate(void *argument)
 	}
 }
 
-//void print(void *argument)
-//{
-//
-//	for(;;)
-//	{
-//
-//		if(xSemaphoreTake(printSemaphore, portMAX_DELAY) == pdTRUE)
-//		{
-//			UART_escapes("8");
-//			UART_escapes("[K");
-//			UART_print(freqstring);
-//
-//		}
-//
-//	}
-//
-//}
+void print(void *argument)
+{
+	printgraph();
+	printnumbers();
+	eraseplot();
+
+	for(;;)
+	{
+
+		if(xSemaphoreTake(printSemaphore, ( TickType_t ) 400) == pdTRUE)
+		{
+			GPIOC->ODR ^=GPIO_ODR_OD0;
+			eraseplot();
+			printmag(testOutput,max);
+			UART_escapes("[H");
+			UART_escapes("[11C");
+			UART_escapes("[K");
+			UART_print(freqstring);
+
+
+		}
+
+	}
+
+}
 

@@ -106,10 +106,12 @@ void DMA1_Channel1_IRQHandler()
 	{
 		DMA1->IFCR |= (DMA_IFCR_CHTIF1); //clear half transfer flag
 
+
 		xSemaphoreGiveFromISR(calculateSemaphore1, &xHigherPriorityTaskWoken );
 	}
 	else if(DMA1->ISR & DMA_ISR_TCIF1)
 	{
+
 		  DMA1->IFCR |= (DMA_IFCR_CTCIF1); //clear interrupt flag
 		  DMA1->IFCR |= (DMA_IFCR_CGIF1); //clear global interrupt flag
 		  xSemaphoreGiveFromISR(calculateSemaphore2, &xHigherPriorityTaskWoken );

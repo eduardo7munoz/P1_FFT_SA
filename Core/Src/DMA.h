@@ -8,7 +8,7 @@
 #ifndef SRC_DMA_H_
 #define SRC_DMA_H_
 #define LENGTH_OF_ARRAY 4096
-#define LENGTH_OF_FFT (LENGTH_OF_ARRAY/2)
+#define LENGTH_OF_FFT 256
 #define NUM_TO_COPY LENGTH_OF_ARRAY
 #define ARM_MATH_CM4
 

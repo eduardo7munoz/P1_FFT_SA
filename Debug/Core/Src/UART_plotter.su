@@ -1,0 +1,4 @@
+UART_plotter.c:12:6:printmag	24	static
+UART_plotter.c:53:6:eraseplot	16	static
+UART_plotter.c:69:6:printgraph	24	static
+UART_plotter.c:111:6:printnumbers	24	static

@@ -138,11 +138,11 @@ int main(void)
 //  retVal = xTaskCreate(setupFFT, "setupFFT", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY+3, &setup_FFT_Handler);
 //  if(retVal!=pdPASS){while(1);}//task creation failed
 
-  retVal = xTaskCreate(calculate, "calculate", 4*configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY+1, &calculate_freq_Handler);
+  retVal = xTaskCreate(calculate, "calculate", 4*configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY+4, &calculate_freq_Handler);
   if(retVal!=pdPASS){while(1);}//task creation failed
 
-//  retVal = xTaskCreate(print, "print",configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY+1, &print_freq_Handler);
-//  if(retVal!=pdPASS){while(1);}//task creation failed
+  retVal = xTaskCreate(print, "print",configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY+1, &print_freq_Handler);
+  if(retVal!=pdPASS){while(1);}//task creation failed
 
   /* USER CODE END RTOS_THREADS */
 
