@@ -32,6 +32,7 @@
 #include "arm_const_structs.h"
 #include "UART.h"
 #include "MyTasks.h"
+#define HANNING_SIZE LENGTH_OF_FFT
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -65,6 +66,8 @@ void StartDefaultTask(void *argument);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+//q15_t hanningwind[HANNING_SIZE];
 uint16_t collectedsamples[LENGTH_OF_ARRAY] ={0};
 /* USER CODE END 0 */
 
@@ -132,13 +135,14 @@ int main(void)
 	UART_escapes("[H");
 	UART_print("Frequency: ");
 	UART_escapes("[s");
+//	hanning(hanningwind, HANNING_SIZE);
 
 
 
 //  retVal = xTaskCreate(setupFFT, "setupFFT", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY+3, &setup_FFT_Handler);
 //  if(retVal!=pdPASS){while(1);}//task creation failed
 
-  retVal = xTaskCreate(calculate, "calculate", 4*configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY+4, &calculate_freq_Handler);
+  retVal = xTaskCreate(calculate, "calculate", 6*configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY+4, &calculate_freq_Handler);
   if(retVal!=pdPASS){while(1);}//task creation failed
 
   retVal = xTaskCreate(print, "print",configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY+1, &print_freq_Handler);

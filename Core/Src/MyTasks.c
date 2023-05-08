@@ -52,7 +52,7 @@ void setupFFT(void *argument)
 SemaphoreHandle_t printSemaphore = NULL;
 SemaphoreHandle_t calculateSemaphore1 = NULL;
 SemaphoreHandle_t calculateSemaphore2 = NULL;
-q15_t testOutput[SIZEOUTPUT_FFTSA] = {0};
+q15_t testOutput[SIZEOUTPUT_FFTSA/2] = {0};
 q15_t max;
 
 void calculate(void *argument)
@@ -68,7 +68,7 @@ void calculate(void *argument)
 	arm_rfft_instance_q15 fft1;
 	uint16_t freq;
 
-	uint32_t index;
+	uint32_t maxindex;
 	q15_t * sampleloc1 =  (q15_t *)&collectedsamples;
 	q15_t * sampleloc2 =  (q15_t *)&collectedsamples[2047];
 	arm_rfft_init_q15(&fft1, SIZEFFT_FOR_SA, 0, 1);
@@ -93,17 +93,21 @@ void calculate(void *argument)
 				{
 
 
+//					applyhanning(sampleloc1, HANNING_SIZE);
 
 					arm_rfft_q15(&fft1, sampleloc1, outputloc);
 
-					arm_max_q15(&testOutput[1], SIZEOUTPUT_FFTSA/2-1 ,&max ,&index);
 
-					freq = index/2;
+
+					arm_max_q15(&testOutput[1], SIZEOUTPUT_FFTSA/2-1 ,&max ,&maxindex);
+
+
+
+					freq = (maxindex+1);
 					GPIOC->ODR ^= GPIO_ODR_OD1;
 
-					itoa(freq*(2048/256), freqstring, 10);
+					itoa(freq*8/2, freqstring, 10);
 					xSemaphoreGive(printSemaphore);
-
 
 
 
@@ -112,11 +116,17 @@ void calculate(void *argument)
 				if(xSemaphoreTake(calculateSemaphore2, ( TickType_t ) 400 )== pdTRUE)
 				{
 
+//					applyhanning(sampleloc2, HANNING_SIZE);
 					arm_rfft_q15(&fft1, sampleloc2, outputloc);
-					arm_max_q15(&testOutput[1], SIZEOUTPUT_FFTSA/2-1 ,&max ,&index);
-					freq = index/2;
-					itoa(freq*(2048/256), freqstring, 10);
+
+
+					arm_max_q15(&testOutput[1], SIZEOUTPUT_FFTSA/2-1 ,&max ,&maxindex);
+
+
+					freq = (maxindex+1);
+					itoa(freq*8/2, freqstring, 10);
 					xSemaphoreGive(printSemaphore);
+
 
 				}
 
@@ -139,11 +149,11 @@ void print(void *argument)
 	for(;;)
 	{
 
-		if(xSemaphoreTake(printSemaphore, ( TickType_t ) 400) == pdTRUE)
+		if(xSemaphoreTake(printSemaphore, ( TickType_t ) 1200) == pdTRUE)
 		{
 			GPIOC->ODR ^=GPIO_ODR_OD0;
 			eraseplot();
-			printmag(testOutput,max);
+			printmag(max);
 			UART_escapes("[H");
 			UART_escapes("[11C");
 			UART_escapes("[K");

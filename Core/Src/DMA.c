@@ -9,10 +9,12 @@
  *      Author: eduardomunoz
  */
 #include "main.h"
+#include <stdlib.h>
 #include "DMA.h"
 #include "cmsis_os.h"
 #include "semphr.h"
 
+extern q15_t hanningwind[2048];
 extern SemaphoreHandle_t calculateSemaphore1;
 extern SemaphoreHandle_t calculateSemaphore2;
 
@@ -118,4 +120,18 @@ void DMA1_Channel1_IRQHandler()
 
 	}
 
+}
+
+void hanning(q15_t *window, uint16_t length) {
+
+    for (uint16_t i = 0; i < length; i++) {
+        window[i] = (q15_t)(0.5 - 0.5 * cos(2 * PI * i / (length - 1)));
+    }
+}
+
+void applyhanning(q15_t *samples, uint16_t length){
+
+    for (uint16_t i = 0; i < length; i++) {
+        samples[i] = hanningwind[i]*samples[i];
+    }
 }

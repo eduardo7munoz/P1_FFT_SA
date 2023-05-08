@@ -9,36 +9,46 @@
 #include "UART_plotter.h"
 #include "UART.h"
 
-void printmag(int16_t outputpoints[512], uint16_t max)
+extern q15_t testOutput[1024];
+
+void printmag(uint16_t lmax)
 {
-	int16_t outputmag = 0;
+	q15_t outputmag[2] = {0};
 	uint8_t mag = 0;
 
 	UART_escapes("[H");
 	UART_escapes("[4C");
 	UART_escapes("[3B");
 	UART_escapes("[2C");
-	UART_escapes("[24B");
+	UART_escapes("[29B");
 	UART_escapes("[s");
-	for(mag = 0; mag<(outputpoints[0]*10)/(3*max); mag++)
-	{
-		UART_print("*");
-		UART_escapes("[1A");
-		UART_escapes("[1D");
 
+
+	if(testOutput[0]>0)
+	{
+		for(mag = 0; mag<(testOutput[0]*10)/(testOutput[0]); mag++)
+		{
+			UART_print("*");
+			UART_escapes("[1A");
+			UART_escapes("[1D");
+
+		}
 	}
 
 
 
-	for(uint16_t index = 2; index+2 < LENGTH_OF_FFT; index=index+4)
+	for(uint16_t index = 0; index< 127; index++)
 	{
-		outputpoints[index];
-		outputmag = ((outputpoints[index]*20)/max+(outputpoints[index+2]*20)/max)/2;
+		arm_mean_q15( &testOutput[(index * 2)+2], 2, &outputmag[0]);
+		outputmag[0] = ((25*(int16_t)outputmag[0])/lmax);
+		outputmag[0] = outputmag[0] > 15 ? 15:outputmag[0];
 		UART_escapes("8");
-		UART_escapes("[2C");
+		UART_escapes("[C");
 		UART_escapes("[s");
 
-		for(mag = 0; mag<outputmag; mag++)
+
+
+		for(mag = 0; mag<outputmag[0]; mag++)
 		{
 			UART_print("*");
 			UART_escapes("[1A");
@@ -56,7 +66,7 @@ void eraseplot()
 	UART_escapes("[4C");
 	UART_escapes("[3B");
 	UART_escapes("[2C");
-	for(uint16_t verticalborder = 0; verticalborder <25; verticalborder++)
+	for(uint16_t verticalborder = 0; verticalborder <VERTICAL_HEIGHT; verticalborder++)
 		{
 			UART_escapes("[K");
 			UART_escapes("[1B");
@@ -76,7 +86,7 @@ void printgraph()
 	UART_escapes("[1C");
 	UART_escapes("[s");
 	UART_escapes("[1D");
-	for(uint16_t verticalborder = 0; verticalborder <25; verticalborder++)
+	for(uint16_t verticalborder = 0; verticalborder <VERTICAL_HEIGHT; verticalborder++)
 	{
 		UART_print("|");
 		UART_escapes("[1B");
@@ -87,7 +97,7 @@ void printgraph()
 
 	uint16_t freq = 128;
 	char freqstr1[4];
-	UART_escapes("[1C");
+	UART_escapes("[2C");
 	for(uint16_t horizontalborder = 0; horizontalborder <128; horizontalborder++)
 	{
 
@@ -114,7 +124,7 @@ void printnumbers()
 	uint16_t num = 0;
 	char spacingstr[4];
 	char freqstr1[4];
-	UART_escapes("[127D");
+	UART_escapes("[126D");
 	UART_escapes("[1B");
 	uint16_t placenum=0;
 	for(placenum=0; placenum<8; ++placenum)

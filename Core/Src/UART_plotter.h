@@ -9,8 +9,9 @@
 #define SRC_UART_PLOTTER_H_
 #include "main.h"
 #include <stdlib.h>
+#define VERTICAL_HEIGHT 30
 
-void printmag(int16_t outputpoints[512], uint16_t max);
+void printmag(uint16_t max);
 
 void eraseplot();
 

@@ -1,5 +1,7 @@
 core_cm4.h:1809:22:__NVIC_SetPriority	16	static
-DMA.c:19:6:DMA1channel3_mem2mem_init	16	static,ignoring_inline_asm
-DMA.c:53:6:DMA1channel1_ADC_init	16	static,ignoring_inline_asm
-DMA.c:87:6:DMA1_Channel3_IRQHandler	4	static
-DMA.c:101:6:DMA1_Channel1_IRQHandler	16	static
+DMA.c:21:6:DMA1channel3_mem2mem_init	16	static,ignoring_inline_asm
+DMA.c:55:6:DMA1channel1_ADC_init	16	static,ignoring_inline_asm
+DMA.c:89:6:DMA1_Channel3_IRQHandler	4	static
+DMA.c:103:6:DMA1_Channel1_IRQHandler	16	static
+DMA.c:125:6:hanning	32	static
+DMA.c:132:6:applyhanning	24	static
