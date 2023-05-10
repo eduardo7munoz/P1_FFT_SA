@@ -10,6 +10,7 @@
 
 /*
  * setup timer 2
+ * this timer is setup to trigger the ADC to begin conversions
  */
 void tim2_init()
 {

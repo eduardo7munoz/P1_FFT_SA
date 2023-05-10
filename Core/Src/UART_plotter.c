@@ -1,6 +1,8 @@
 /*
  * UART_plotter.c
  *
+ *	This file contains the code for constructing the border of the Spectrum Analyzer as well as
+ *	printing the magnitudes of each bin from the FFT
  *  Created on: May 7, 2023
  *      Author: eduardomunoz
  */
@@ -37,11 +39,11 @@ void printmag(uint16_t lmax)
 
 
 
-	for(uint16_t index = 0; index< 127; index++)
+	for(uint16_t index = 0; index< BINS; index++)
 	{
-		arm_mean_q15( &testOutput[(index * 2)+2], 2, &outputmag[0]);
-		outputmag[0] = ((25*(int16_t)outputmag[0])/lmax);
-		outputmag[0] = outputmag[0] > 15 ? 15:outputmag[0];
+		arm_mean_q15( &testOutput[(index * 2*BLOCK_SIZE)+2], BLOCK_SIZE, &outputmag[0]);
+		outputmag[0] = ((30*(int16_t)outputmag[0])/lmax);
+		outputmag[0] = outputmag[0] > 25 ? 22:outputmag[0];
 		UART_escapes("8");
 		UART_escapes("[C");
 		UART_escapes("[s");
@@ -66,7 +68,8 @@ void eraseplot()
 	UART_escapes("[4C");
 	UART_escapes("[3B");
 	UART_escapes("[2C");
-	for(uint16_t verticalborder = 0; verticalborder <VERTICAL_HEIGHT; verticalborder++)
+	//erases all previous magnitudes and ignores the borders
+	for(uint16_t verticalpos = 0; verticalpos <VERTICAL_HEIGHT; verticalpos++)
 		{
 			UART_escapes("[K");
 			UART_escapes("[1B");
@@ -74,6 +77,7 @@ void eraseplot()
 
 		}
 }
+
 
 
 void printgraph()
@@ -86,6 +90,7 @@ void printgraph()
 	UART_escapes("[1C");
 	UART_escapes("[s");
 	UART_escapes("[1D");
+	//printing the vertical axis
 	for(uint16_t verticalborder = 0; verticalborder <VERTICAL_HEIGHT; verticalborder++)
 	{
 		UART_print("|");
@@ -94,10 +99,8 @@ void printgraph()
 
 
 	}
-
-	uint16_t freq = 128;
-	char freqstr1[4];
 	UART_escapes("[2C");
+	//printing the horizontal axis
 	for(uint16_t horizontalborder = 0; horizontalborder <128; horizontalborder++)
 	{
 
@@ -105,33 +108,24 @@ void printgraph()
 			UART_print("_");
 
 	}
-//	UART_escapes("[128D");
-//	UART_escapes("[1B");
-//	uint16_t placenum=0;
-//	for(placenum=0; placenum<7; ++placenum)
-//	{
-//		UART_escapes("[16C");
-//		itoa(freq,freqstr1, 10);
-//		UART_print(freqstr1);
-//		freq +=128;
-//	}
 
 }
 
 void printnumbers()
 {
 	uint16_t freq = 128;
-	uint16_t num = 0;
-	char spacingstr[4];
 	char freqstr1[4];
+
+
+	//[nB down n lines, [nA up n lines, [nC right n lines, [nD left n lines
 	UART_escapes("[126D");
 	UART_escapes("[1B");
-	uint16_t placenum=0;
-	for(placenum=0; placenum<8; ++placenum)
+
+
+	//places freq 128-1024 inc by 128 13 spaces apart
+	for(uint8_t placenum=0; placenum<8; placenum++)
 	{
 		itoa(freq,freqstr1, 10);
-//		num = 14-(sizeof(freqstr1)/sizeof(char));
-//		sprintf(spacingstr, "[%dC", num);
 		UART_escapes("[13C");
 		UART_print(freqstr1);
 		freq +=128;

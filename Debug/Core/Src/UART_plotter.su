@@ -1,4 +1,4 @@
-UART_plotter.c:14:6:printmag	24	static
-UART_plotter.c:63:6:eraseplot	16	static
-UART_plotter.c:79:6:printgraph	24	static
-UART_plotter.c:121:6:printnumbers	24	static
+UART_plotter.c:16:6:printmag	24	static
+UART_plotter.c:65:6:eraseplot	16	static
+UART_plotter.c:83:6:printgraph	16	static
+UART_plotter.c:114:6:printnumbers	16	static

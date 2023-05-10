@@ -1,9 +1,14 @@
 /*
  * MyTasks.c
+ * This file holds the tasks utilized to calculate and print the spectrum analysis
+ * The tasks utilize semaphores to synchronize calculations, printing, and to protect the information in buffers
+ *
+ *
  *
  *  Created on: Apr 12, 2023
  *      Author: eduardomunoz
  */
+
 #include <stdlib.h>
 #include "cmsis_os.h"
 #include "main.h"
@@ -17,8 +22,7 @@
 #include "semphr.h"
 #include "UART_plotter.h"
 
-#define SIZEFFT_FOR_SA LENGTH_OF_FFT
-#define SIZEOUTPUT_FFTSA SIZEFFT_FOR_SA*2
+#define SIZEOUTPUT_FFTSA LENGTH_OF_FFT*2
 
 char freqstring[4];
 extern uint16_t collectedsamples[LENGTH_OF_ARRAY]; //declared in main
@@ -39,7 +43,7 @@ void setupFFT(void *argument)
 	UART_escapes("[s");
 
 
-	arm_rfft_init_q15(&fft1, SIZEFFT_FOR_SA, 0, 1);
+	arm_rfft_init_q15(&fft1, LENGTH_OF_FFT, 0, 1);
 
 	vTaskResume(calculate_freq_Handler);
 	vTaskResume(print_freq_Handler);
@@ -53,17 +57,20 @@ SemaphoreHandle_t printSemaphore = NULL;
 SemaphoreHandle_t calculateSemaphore1 = NULL;
 SemaphoreHandle_t calculateSemaphore2 = NULL;
 q15_t testOutput[SIZEOUTPUT_FFTSA/2] = {0};
+q15_t fftNormalized[SIZEOUTPUT_FFTSA/2] = {0};
 q15_t max;
+
+/*
+ * This task calculates the FFT for Half and Full transfers of the DMA
+ * These calculations are synchronized using calculateSemaphore1 and calculateSemaphore2
+ * Since these are binary semaphores attempting to take a semaphore will block the task for the alotted time
+ * when the the semaphore is given in the ISRs the task is able to resume
+ * this task also gives the print semaphore once a calculation is done
+ */
 
 void calculate(void *argument)
 {
 
-//	xQueue1 = xQueueCreate( 10, sizeof(uint16_t) );
-
-//	if( xQueue1 == NULL)
-//	{
-//	     while(1);/* Queue was not created and must not be used. */
-//	}
 
 	arm_rfft_instance_q15 fft1;
 	uint16_t freq;
@@ -71,15 +78,14 @@ void calculate(void *argument)
 	uint32_t maxindex;
 	q15_t * sampleloc1 =  (q15_t *)&collectedsamples;
 	q15_t * sampleloc2 =  (q15_t *)&collectedsamples[2047];
-	arm_rfft_init_q15(&fft1, SIZEFFT_FOR_SA, 0, 1);
+	arm_rfft_init_q15(&fft1, LENGTH_OF_FFT, 0, 1);
 
 	printSemaphore = xSemaphoreCreateBinary();//creating the semaphore once
 
 	calculateSemaphore1 = xSemaphoreCreateBinary();
 	calculateSemaphore2 = xSemaphoreCreateBinary();
 
-
-	if(printSemaphore != NULL && calculateSemaphore1 !=NULL)
+	if(calculateSemaphore1 != 	NULL && calculateSemaphore2!= NULL && printSemaphore!= NULL)
 	{
 		for(;;)
 		{
@@ -93,20 +99,20 @@ void calculate(void *argument)
 				{
 
 
-//					applyhanning(sampleloc1, HANNING_SIZE);
 
-					arm_rfft_q15(&fft1, sampleloc1, outputloc);
+//					arm_fir_f32();
+					applyhanning(sampleloc1, HANNING_SIZE); //used to reduce spectral leakage
 
+					arm_rfft_q15(&fft1, sampleloc1, outputloc); //conducts fft on result of hanning window
 
-
-					arm_max_q15(&testOutput[1], SIZEOUTPUT_FFTSA/2-1 ,&max ,&maxindex);
+					arm_max_q15(&testOutput[1], SIZEOUTPUT_FFTSA/4-1 ,&max ,&maxindex); //sampling rate was 4.096Khz so 1kHz in bottom 1/4
 
 
 
 					freq = (maxindex+1);
 					GPIOC->ODR ^= GPIO_ODR_OD1;
 
-					itoa(freq*8/2, freqstring, 10);
+					itoa(freq*4, freqstring, 10);
 					xSemaphoreGive(printSemaphore);
 
 
@@ -116,35 +122,38 @@ void calculate(void *argument)
 				if(xSemaphoreTake(calculateSemaphore2, ( TickType_t ) 400 )== pdTRUE)
 				{
 
-//					applyhanning(sampleloc2, HANNING_SIZE);
-					arm_rfft_q15(&fft1, sampleloc2, outputloc);
+					applyhanning(sampleloc2, HANNING_SIZE);
+
+					arm_rfft_q15(&fft1, sampleloc2, outputloc);//conducts fft on result of hanning window
 
 
-					arm_max_q15(&testOutput[1], SIZEOUTPUT_FFTSA/2-1 ,&max ,&maxindex);
-
+					arm_max_q15(&testOutput[1], SIZEOUTPUT_FFTSA/4-1 ,&max ,&maxindex); //sampling rate was 4.096Khz so 1kHz in bottom 1/4
 
 					freq = (maxindex+1);
-					itoa(freq*8/2, freqstring, 10);
+					itoa(freq*4, freqstring, 10);
 					xSemaphoreGive(printSemaphore);
 
 
 				}
 
 
-
-//		xQueueSend(xQueue1, (void *) freq, ( TickType_t ) 10);
-//		vTaskDelay(10/portTICK_PERIOD_MS);
-
-
 		}
 	}
 }
 
+/*
+ * this task is used to print out the spectral data after calculations
+ * by using a binary semaphore the task is blocked when it attempts to take the semaphore and it is not available
+ * upon being given in the calculate task after an fft calculation it will return here and unblock the task
+ */
+
 void print(void *argument)
 {
+
+
 	printgraph();
 	printnumbers();
-	eraseplot();
+
 
 	for(;;)
 	{

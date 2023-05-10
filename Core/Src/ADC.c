@@ -5,6 +5,7 @@
  * this ADC was put in continuous conversion mode
  * no interrupts were used here
  * it was configured for circular mode in the DMA
+ * the adc here is triggered off the input from timer2 it triggers conversions on both rising and falling
  *  Created on: Apr 16, 2023
  *      Author: eduardomunoz
  */
